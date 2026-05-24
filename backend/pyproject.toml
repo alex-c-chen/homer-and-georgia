@@ -1,0 +1,45 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.15"
+dependencies = [
+    "alembic>=1.18.4",
+    "alembic-postgresql-enum>=1.10.0",
+    "fastapi>=0.136.3",
+    "pydantic>=2.13.4",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.14",
+    "ty>=0.0.39",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py315"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking (moves pure-type imports into TYPE_CHECKING blocks)
+]
+ignore = [
+    "E501", # line too long — ruff format handles this
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ty]
+# ty is alpha (0.0.x); run: uv run ty check .
+# Treat errors as advisory until 1.0
