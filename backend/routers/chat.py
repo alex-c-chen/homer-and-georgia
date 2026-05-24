@@ -6,7 +6,6 @@ import uuid
 from datetime import UTC, datetime
 
 import anthropic
-import boto3
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel as PydanticBase
 from sqlalchemy.orm import Session
@@ -14,21 +13,15 @@ from sse_starlette.sse import EventSourceResponse
 
 from db import get_db
 from models import ChatMessage, ChatSession, LLMUsage, MessageRole, Question
+from s3_util import get_question_blob
 
 router = APIRouter()
 
-_s3 = boto3.client("s3")
-_S3_BUCKET = os.environ["S3_BUCKET"]
 _ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 
 
 def _get_anthropic_client() -> anthropic.Anthropic:
     return anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-
-
-def _load_question_blob(s3_key: str) -> dict:
-    obj = _s3.get_object(Bucket=_S3_BUCKET, Key=s3_key)
-    return json.loads(obj["Body"].read())
 
 
 class SessionOut(PydanticBase):
@@ -64,7 +57,7 @@ def start_session(body: StartSessionIn, db: Session = Depends(get_db)):
     if not question:
         raise HTTPException(404, "Question not found.")
 
-    blob = _load_question_blob(question.s3_key)
+    blob = get_question_blob(question.s3_key)
     now = datetime.now(UTC)
 
     session = ChatSession(

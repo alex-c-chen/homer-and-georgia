@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from db import get_db
 from models import DailySchedule, DailyTopic, Question, Topic
+from s3_util import get_question_blob
 
 router = APIRouter()
 
@@ -41,6 +42,20 @@ class QuestionOut(PydanticBase):
     model_config = {"from_attributes": True}
 
 
+class QuestionDetailOut(PydanticBase):
+    """Full question content fetched from S3, merged with DB metadata."""
+
+    id: uuid.UUID
+    topic_id: uuid.UUID
+    question_type_id: int
+    difficulty: int
+    prior_question_id: uuid.UUID | None
+    prompt: str
+    answer_key: str
+    explanation: str
+    options: list[str] | None = None
+
+
 @router.get("/today", response_model=DayOut)
 def get_today(db: Session = Depends(get_db)):
     """Return today's schedule row.
@@ -68,6 +83,26 @@ def get_topics(schedule_id: uuid.UUID, db: Session = Depends(get_db)):
 
 @router.get("/{schedule_id}/questions", response_model=list[QuestionOut])
 def get_questions(schedule_id: uuid.UUID, db: Session = Depends(get_db)):
-    """Return all questions for a given day, ordered by topic display order."""
+    """Return all questions for a given day."""
     rows = db.query(Question).filter(Question.daily_schedule_id == schedule_id).all()
     return rows
+
+
+@router.get("/questions/{question_id}", response_model=QuestionDetailOut)
+def get_question_detail(question_id: uuid.UUID, db: Session = Depends(get_db)):
+    """Return full question content (prompt, answer key, explanation) from S3.
+
+    :raises HTTPException 404: if the question does not exist.
+    """
+    question = db.get(Question, question_id)
+    if not question:
+        raise HTTPException(404, "Question not found.")
+    blob = get_question_blob(question.s3_key)
+    return QuestionDetailOut(
+        id=question.id,
+        topic_id=question.topic_id,
+        question_type_id=question.question_type_id,
+        difficulty=question.difficulty,
+        prior_question_id=question.prior_question_id,
+        **blob,
+    )
