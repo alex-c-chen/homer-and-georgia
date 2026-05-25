@@ -13,6 +13,7 @@ import uuid
 from datetime import UTC, date, datetime
 
 import boto3
+import httpx
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
@@ -23,6 +24,7 @@ from models import (
     ScheduleStatus,
     Topic,
 )
+from wiki_util import fetch_wikipedia_summary
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 S3_BUCKET = os.environ.get("S3_BUCKET", "homer-and-georgia-prod-questions")
@@ -204,6 +206,29 @@ def run():
                 )
                 db.add(question)
                 print(f"  ✓ {topic_data['name']} — Q{q_data['question_type_id']} (difficulty {q_data['difficulty']})")
+
+            # Dev shortcut: non-math topics get an article straight from the Wikipedia
+            # extract — no LLM call, so local testing doesn't depend on the nightly cron.
+            if topic_data["topic_type_id"] < 6000:
+                try:
+                    wiki = fetch_wikipedia_summary(topic_data["name"])
+                except httpx.HTTPError as e:
+                    print(f"  ⚠ {topic_data['name']} — Wikipedia fetch failed, skipping article: {e}")
+                else:
+                    s3.put_object(
+                        Bucket=S3_BUCKET,
+                        Key=f"articles/{topic.id}.json",
+                        Body=json.dumps(
+                            {
+                                "title": topic_data["name"],
+                                "body": wiki["extract"],
+                                "image_url": wiki["thumbnail_url"],
+                                "source_url": wiki["page_url"],
+                            }
+                        ),
+                        ContentType="application/json",
+                    )
+                    print(f"  ✓ {topic_data['name']} — article")
 
         db.commit()
 
