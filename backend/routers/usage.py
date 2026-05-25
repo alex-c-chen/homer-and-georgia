@@ -57,12 +57,16 @@ def _get_aws_summary() -> AWSBreakdown:
     if start == end:
         return AWSBreakdown(total_cents=0.0, by_service={})
 
-    resp = ce.get_cost_and_usage(
-        TimePeriod={"Start": start, "End": end},
-        Granularity="MONTHLY",
-        Metrics=["UnblendedCost"],
-        GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
-    )
+    try:
+        resp = ce.get_cost_and_usage(
+            TimePeriod={"Start": start, "End": end},
+            Granularity="MONTHLY",
+            Metrics=["UnblendedCost"],
+            GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
+        )
+    except ce.exceptions.DataUnavailableException:
+        # Cost Explorer returns this for ~24 h after first being enabled.
+        return AWSBreakdown(total_cents=0.0, by_service={})
 
     by_service: dict[str, float] = {}
     for group in resp["ResultsByTime"][0]["Groups"]:
