@@ -1,12 +1,31 @@
-from fastapi import FastAPI
+import json
+import logging
+from contextlib import asynccontextmanager
 
+from fastapi import Depends, FastAPI
+
+from auth import require_auth
 from routers import chat, schedule, usage
 
-app = FastAPI(title="homer-and-georgia")
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+log = logging.getLogger("app")
 
-app.include_router(schedule.router, prefix="/schedule", tags=["schedule"])
-app.include_router(chat.router, prefix="/chat", tags=["chat"])
-app.include_router(usage.router, prefix="/usage", tags=["usage"])
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    log.info(json.dumps({"event": "startup", "service": "homer-and-georgia"}))
+    yield
+
+
+app = FastAPI(title="homer-and-georgia", lifespan=lifespan)
+
+app.include_router(
+    schedule.router, prefix="/schedule", tags=["schedule"], dependencies=[Depends(require_auth)]
+)
+app.include_router(chat.router, prefix="/chat", tags=["chat"], dependencies=[Depends(require_auth)])
+app.include_router(
+    usage.router, prefix="/usage", tags=["usage"], dependencies=[Depends(require_auth)]
+)
 
 
 @app.get("/health")

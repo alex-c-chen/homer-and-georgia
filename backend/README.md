@@ -86,5 +86,6 @@ uv run ty check .   # alpha — advisory
 | `S3_BUCKET` | ✓ | S3 bucket for question blobs |
 | `AWS_ACCESS_KEY_ID` | ✓ | IAM user from Terraform output |
 | `AWS_SECRET_ACCESS_KEY` | ✓ | IAM user secret |
+| `API_SECRET` | — | Bearer token for `/schedule`, `/chat`, `/usage`. Unset = auth disabled (dev) |
 | `ANTHROPIC_MODEL` | — | Default: `claude-sonnet-4-6` |
 | `TOPICS_PER_DAY` | — | Default: `7` (used by cron) |
