@@ -63,50 +63,6 @@ struct MeshHero: View {
     }
 }
 
-/// Floating glass tab switcher — replaces the stock segmented control.
-struct GlassTabBar: View {
-    @Binding var selected: Int
-    let labels: [String]
-    var tint: Color = .primary
-
-    var body: some View {
-        GeometryReader { geo in
-            let pillWidth = geo.size.width / CGFloat(labels.count)
-
-            ZStack(alignment: .leading) {
-                // Track
-                Capsule()
-                    .fill(.ultraThinMaterial)
-
-                // Sliding indicator
-                Capsule()
-                    .fill(tint.opacity(0.18))
-                    .overlay(Capsule().strokeBorder(tint.opacity(0.25), lineWidth: 1))
-                    .frame(width: pillWidth)
-                    .offset(x: CGFloat(selected) * pillWidth)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.75), value: selected)
-
-                // Labels
-                HStack(spacing: 0) {
-                    ForEach(labels.indices, id: \.self) { i in
-                        Button {
-                            selected = i
-                        } label: {
-                            Text(labels[i])
-                                .font(.subheadline.weight(selected == i ? .semibold : .regular))
-                                .foregroundStyle(selected == i ? tint : .secondary)
-                                .frame(maxWidth: .infinity)
-                                .animation(.spring(response: 0.3, dampingFraction: 0.75), value: selected)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-        }
-        .frame(height: 40)
-    }
-}
-
 /// Small pill badge used for question type / difficulty labels.
 struct Badge: View {
     let text: String
