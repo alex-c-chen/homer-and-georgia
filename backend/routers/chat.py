@@ -1,6 +1,7 @@
 """Chat endpoints — session creation, SSE streaming, history retrieval."""
 
 import json
+import logging
 import os
 import uuid
 from datetime import UTC, datetime
@@ -17,6 +18,8 @@ from s3_util import get_question_blob
 
 router = APIRouter()
 
+log = logging.getLogger("chat")
+
 _ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 
 
@@ -27,6 +30,7 @@ def _get_anthropic_client() -> anthropic.Anthropic:
 class SessionOut(PydanticBase):
     id: uuid.UUID
     question_id: uuid.UUID
+    is_correct: bool | None = None
     model_config = {"from_attributes": True}
 
 
@@ -44,12 +48,47 @@ class StartSessionIn(PydanticBase):
     time_spent_seconds: int | None = None
 
 
+async def _grade_answer(
+    prompt: str,
+    answer_key: str,
+    user_answer: str,
+    model: str,
+) -> tuple[bool, anthropic.types.Usage]:
+    """Call Claude to grade a user answer against the answer key.
+
+    :returns: ``(is_correct, usage)`` — the verdict plus the Anthropic usage
+        object so the caller can record cost.
+    """
+    client = _get_anthropic_client()
+    resp = client.messages.create(
+        model=model,
+        max_tokens=64,
+        system=(
+            "You are a strict but fair grader. Reply with exactly one word: CORRECT or INCORRECT."
+        ),
+        messages=[
+            {
+                "role": "user",
+                "content": (
+                    f"Question: {prompt}\n\n"
+                    f"Answer key: {answer_key}\n\n"
+                    f"Student answer: {user_answer}\n\n"
+                    "Is the student answer substantially correct?"
+                ),
+            }
+        ],
+    )
+    text = resp.content[0].text.strip().upper()
+    return text.startswith("CORRECT"), resp.usage
+
+
 @router.post("/sessions", response_model=SessionOut, status_code=201)
-def start_session(body: StartSessionIn, db: Session = Depends(get_db)):
-    """Open a chat session and record the user's initial answer.
+async def start_session(body: StartSessionIn, db: Session = Depends(get_db)):
+    """Open a chat session, record the user's initial answer, and grade it.
 
     The question text is stored as the system message; the user's answer as
-    ``user_initial_answer``. Grading happens asynchronously via the cron worker.
+    ``user_initial_answer``. Grading runs synchronously here so the iOS app can
+    read ``is_correct`` from the 201 response.
 
     :raises HTTPException 404: if the question does not exist.
     """
@@ -87,6 +126,31 @@ def start_session(body: StartSessionIn, db: Session = Depends(get_db)):
             role=MessageRole.user_initial_answer,
             content=body.initial_answer,
             created_at=now,
+        )
+    )
+
+    is_correct, usage = await _grade_answer(
+        prompt=blob["prompt"],
+        answer_key=blob["answer_key"],
+        user_answer=body.initial_answer,
+        model=_ANTHROPIC_MODEL,
+    )
+    session.is_correct = is_correct
+
+    # Grading is a tiny standalone call: full rate, no batch discount, no cache.
+    input_cost = usage.input_tokens * 3 / 1_000_000 * 100
+    output_cost = usage.output_tokens * 15 / 1_000_000 * 100
+    db.add(
+        LLMUsage(
+            id=uuid.uuid4(),
+            provider="anthropic",
+            model=_ANTHROPIC_MODEL,
+            operation="grading",
+            input_tokens=usage.input_tokens,
+            output_tokens=usage.output_tokens,
+            cost_cents=round(input_cost + output_cost, 2),
+            created_at=datetime.now(UTC),
+            ref_id=session.id,
         )
     )
 
@@ -148,6 +212,7 @@ def send_message(session_id: uuid.UUID, body: dict, db: Session = Depends(get_db
     async def _stream():
         full_text = ""
         usage = None
+        log.info(json.dumps({"event": "sse_open", "session_id": str(session_id)}))
 
         with client.messages.stream(
             model=_ANTHROPIC_MODEL,
@@ -202,6 +267,15 @@ def send_message(session_id: uuid.UUID, body: dict, db: Session = Depends(get_db
             )
 
         db.commit()
+        log.info(
+            json.dumps(
+                {
+                    "event": "sse_close",
+                    "session_id": str(session_id),
+                    "output_tokens": usage.output_tokens if usage else None,
+                }
+            )
+        )
         yield {"event": "done", "data": "[DONE]"}
 
     return EventSourceResponse(_stream())
