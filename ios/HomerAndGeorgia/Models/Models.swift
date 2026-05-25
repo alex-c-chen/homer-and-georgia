@@ -24,7 +24,7 @@ struct HistoryDay: Codable, Identifiable {
     var isComplete: Bool { answered == totalQuestions && totalQuestions > 0 }
 }
 
-struct Topic: Codable, Identifiable {
+struct Topic: Codable, Identifiable, Hashable {
     let id: UUID
     let name: String
     let topicTypeId: Int
@@ -95,6 +95,11 @@ struct QuestionDetail: Codable, Identifiable {
     let options: [String]?
 
     var isMultipleChoice: Bool { options != nil }
+}
+
+struct RevealResponse: Codable {
+    let answerKey: String
+    let explanation: String
 }
 
 // MARK: - Chat
