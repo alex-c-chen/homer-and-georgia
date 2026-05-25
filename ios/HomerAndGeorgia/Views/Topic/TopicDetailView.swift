@@ -32,13 +32,10 @@ struct TopicDetailView: View {
             QuizView(topic: topic, questions: questions, viewModel: quizVM, tint: tint)
         } else {
             VStack(spacing: 0) {
-                Picker("", selection: $selectedTab) {
-                    Text("Read").tag(0)
-                    Text("Quiz").tag(1)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.top, 8)
+                GlassTabBar(selected: $selectedTab, labels: ["Read", "Quiz"], tint: tint)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                    .padding(.bottom, 4)
 
                 if selectedTab == 0 {
                     ArticleView(topicId: topic.id, viewModel: articleVM, tint: tint)
