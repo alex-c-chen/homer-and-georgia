@@ -2,6 +2,10 @@ import json
 import logging
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import Depends, FastAPI
 
 from auth import require_auth

@@ -81,7 +81,7 @@ struct QuestionAnswerCard: View {
                 .scrollContentBackground(.hidden)
             }
             .padding(8)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.iconCorner, style: .continuous))
         }
     }
 
@@ -101,7 +101,7 @@ struct QuestionAnswerCard: View {
             .padding(14)
             .background(
                 selected ? tint.opacity(0.12) : Color(.tertiarySystemFill),
-                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                in: RoundedRectangle(cornerRadius: Theme.iconCorner, style: .continuous)
             )
         }
         .buttonStyle(.plain)
@@ -150,7 +150,7 @@ struct QuestionAnswerCard: View {
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(.thinMaterial, in: Capsule())
+                .glassBackground(in: Capsule())
                 .foregroundStyle(tint)
             }
             .padding(.top, 2)

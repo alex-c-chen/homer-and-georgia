@@ -23,7 +23,7 @@ struct MessageBubbleView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(bubbleBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.bubbleCorner, style: .continuous))
             .shadow(color: isUser ? .clear : .black.opacity(0.06), radius: 4, y: 2)
 
             if !isUser { Spacer(minLength: 40) }
@@ -57,7 +57,7 @@ struct TypingIndicator: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Theme.bubbleCorner, style: .continuous))
         .onAppear {
             withAnimation(.easeInOut(duration: 0.5).repeatForever()) {
                 phase = 2

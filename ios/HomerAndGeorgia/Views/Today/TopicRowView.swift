@@ -10,7 +10,7 @@ struct TopicRowView: View {
             Text(topic.emoji)
                 .font(.system(size: 34))
                 .frame(width: 52, height: 52)
-                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: Theme.iconCorner, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(topic.name)

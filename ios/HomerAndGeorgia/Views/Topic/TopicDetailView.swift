@@ -19,33 +19,30 @@ struct TopicDetailView: View {
                 ).ignoresSafeArea()
             )
             .navigationTitle(topic.name)
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Picker("", selection: $selectedTab) {
+                        Text("Read").tag(0)
+                        Text("Quiz").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 180)
+                }
+            }
             .navigationDestination(for: ChatDestination.self) { dest in
                 ChatView(sessionId: dest.sessionId, questionPrompt: dest.prompt, questionType: dest.typeLabel)
             }
     }
 
-    // Math topics have no reading — go straight to the quiz.
     @ViewBuilder
     private var content: some View {
-        if topic.isMath {
+        if topic.isMath || selectedTab == 1 {
             QuizView(topic: topic, questions: questions, viewModel: quizVM, tint: tint)
+                .transition(.opacity)
         } else {
-            VStack(spacing: 0) {
-                GlassTabBar(selected: $selectedTab, labels: ["Read", "Quiz"], tint: tint)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                    .padding(.bottom, 4)
-
-                if selectedTab == 0 {
-                    ArticleView(topicId: topic.id, viewModel: articleVM, tint: tint)
-                        .transition(.opacity)
-                } else {
-                    QuizView(topic: topic, questions: questions, viewModel: quizVM, tint: tint)
-                        .transition(.opacity)
-                }
-            }
-            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: selectedTab)
+            ArticleView(topicId: topic.id, viewModel: articleVM, tint: tint)
+                .transition(.opacity)
         }
     }
 }

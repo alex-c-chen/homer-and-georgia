@@ -63,7 +63,7 @@ struct ArticleView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 220)
             .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.iconCorner, style: .continuous))
             .padding(.horizontal)
         }
 

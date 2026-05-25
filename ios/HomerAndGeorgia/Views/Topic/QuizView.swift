@@ -88,7 +88,7 @@ struct QuizView: View {
             Spacer()
         }
         .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassBackground(in: RoundedRectangle(cornerRadius: Theme.inputCorner, style: .continuous))
     }
 
     // MARK: - Submit / completed
@@ -111,7 +111,7 @@ struct QuizView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(tint.gradient, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .background(tint.gradient, in: RoundedRectangle(cornerRadius: Theme.ctaCorner, style: .continuous))
             .foregroundStyle(.white)
         }
         .disabled(!viewModel.canSubmit)
@@ -131,6 +131,6 @@ struct QuizView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassBackground(in: RoundedRectangle(cornerRadius: Theme.inputCorner, style: .continuous))
     }
 }

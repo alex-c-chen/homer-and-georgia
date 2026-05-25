@@ -7,6 +7,10 @@ enum Theme {
     static let failure = Color.pink
 
     static let cardCorner: CGFloat = 28
+    static let inputCorner: CGFloat = 18     // QuizView banners, grading row
+    static let iconCorner: CGFloat = 16      // icon tint pills, MCQ rows, article image
+    static let bubbleCorner: CGFloat = 20    // chat message bubbles, streaming bubble
+    static let ctaCorner: CGFloat = 22       // Submit All CTA button
 }
 
 /// LiquidGlass-style card: thin material fill, large corner radius, soft shadow.
@@ -33,6 +37,26 @@ struct GlassCard: ViewModifier {
 extension View {
     func glassCard(tint: Color = .clear) -> some View {
         modifier(GlassCard(tint: tint))
+    }
+
+    /// Thin-material background on < iOS 26; native glass on iOS 26+.
+    @ViewBuilder
+    func glassBackground() -> some View {
+        if #available(iOS 26, *) {
+            glassEffect()
+        } else {
+            background(.thinMaterial)
+        }
+    }
+
+    /// Shaped thin-material background on < iOS 26; native glass on iOS 26+.
+    @ViewBuilder
+    func glassBackground<S: InsettableShape>(in shape: S) -> some View {
+        if #available(iOS 26, *) {
+            glassEffect(in: shape)
+        } else {
+            background(.thinMaterial, in: shape)
+        }
     }
 }
 

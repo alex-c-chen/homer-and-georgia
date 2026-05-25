@@ -63,7 +63,7 @@ struct ChatView: View {
                     .fill(Theme.mathTint)
                     .frame(width: 3)
             }
-            .background(.thinMaterial)
+            .glassBackground()
     }
 
     private func gradeBanner(_ correct: Bool) -> some View {
@@ -87,7 +87,7 @@ struct ChatView: View {
                     Text(viewModel.streamingText)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Theme.bubbleCorner, style: .continuous))
                 }
             }
             Spacer(minLength: 40)
