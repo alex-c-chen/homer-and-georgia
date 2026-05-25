@@ -24,7 +24,16 @@ final class APIClient: @unchecked Sendable {
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()
         d.keyDecodingStrategy = .convertFromSnakeCase
-        d.dateDecodingStrategy = .iso8601
+        // The backend emits both date-only strings ("2026-05-24") and datetimes with
+        // 6-digit microseconds — neither of which the built-in .iso8601 strategy accepts.
+        d.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let raw = try container.decode(String.self)
+            if let date = BackendDate.parse(raw) { return date }
+            throw DecodingError.dataCorruptedError(
+                in: container, debugDescription: "Unrecognized date format: \(raw)"
+            )
+        }
         return d
     }()
 
@@ -157,5 +166,32 @@ final class APIClient: @unchecked Sendable {
 
     func fetchUsage() async throws -> UsageSummary {
         try await fetch("/usage/summary")
+    }
+}
+
+/// Parses the date string shapes the FastAPI backend emits: date-only values,
+/// and datetimes with optional fractional (microsecond) precision and offset.
+enum BackendDate {
+    private static let formats = [
+        "yyyy-MM-dd",
+        "yyyy-MM-dd'T'HH:mm:ssXXXXX",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX",
+        "yyyy-MM-dd'T'HH:mm:ss",            // naive datetime, assumed UTC
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",     // naive datetime with microseconds
+    ]
+
+    private static let formatters: [DateFormatter] = formats.map { format in
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: "UTC")
+        f.dateFormat = format
+        return f
+    }
+
+    static func parse(_ string: String) -> Date? {
+        for formatter in formatters {
+            if let date = formatter.date(from: string) { return date }
+        }
+        return nil
     }
 }
