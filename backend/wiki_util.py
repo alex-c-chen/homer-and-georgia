@@ -11,7 +11,8 @@ def fetch_wikipedia_summary(topic_name: str) -> dict:
     :raises httpx.HTTPError: if the Wikipedia API is unreachable.
     """
     url = WIKIPEDIA_API.format(title=topic_name.replace(" ", "_"))
-    resp = httpx.get(url, timeout=10, follow_redirects=True)
+    headers = {"User-Agent": "homer-and-georgia/1.0 (alexchenchen1@gmail.com)"}
+    resp = httpx.get(url, timeout=10, follow_redirects=True, headers=headers)
     resp.raise_for_status()
     data = resp.json()
     return {
