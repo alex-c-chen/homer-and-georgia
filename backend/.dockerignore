@@ -1,0 +1,11 @@
+# The image builds its own venv via `uv sync`; copying the host's would clobber
+# it with one pinned to a macOS interpreter path that doesn't exist in-container.
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+.git/
+.env
+.env.*
+!.env.example
