@@ -23,6 +23,7 @@ from datetime import UTC, date, datetime, timedelta
 
 import anthropic
 import boto3
+import httpx
 
 from db import SessionLocal
 from models import (
@@ -34,11 +35,14 @@ from models import (
     Topic,
     TopicType,
 )
+from wiki_util import fetch_wikipedia_summary
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 log = logging.getLogger("cron")
 
 _ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+# Articles always use Opus regardless of the question model — quality matters more than cost here.
+_ARTICLE_MODEL = "claude-opus-4-7"
 _S3_BUCKET = os.environ["S3_BUCKET"]
 _TOPICS_PER_DAY = int(os.getenv("TOPICS_PER_DAY", "7"))
 
@@ -64,6 +68,25 @@ Topic description: {topic_description}
 Question type: {question_type}  (1=mental/quick, 2=short_answer, 3=intermediate/show-steps)
 Difficulty: {difficulty}  (1=easy, 2=medium, 3=hard)
 Generate one question.\
+"""
+
+_ARTICLE_SYSTEM_PROMPT = (
+    "You are an expert educator writing for a curious adult learner. "
+    "Write a rich, engaging educational article based on the Wikipedia content provided. "
+    "Output ONLY a JSON object with keys: title (string), body (string, 400-600 words of "
+    "flowing prose in markdown — use **bold** for key terms, no headers, 3-4 paragraphs). "
+    "Make it intellectually engaging, not encyclopedic."
+)
+
+_ARTICLE_USER_PROMPT_TEMPLATE = """\
+Topic: {topic_name}
+
+Topic description: {topic_description}
+
+Wikipedia extract:
+{extract}
+
+Write the educational article.\
 """
 
 
@@ -116,6 +139,59 @@ def _build_batch_requests(
     return requests
 
 
+def _fetch_article_sources(topics: list[Topic]) -> dict[str, dict]:
+    """Fetch Wikipedia summaries for every non-math topic.
+
+    Topics whose Wikipedia lookup fails are skipped (no article is generated for them)
+    rather than failing the whole nightly run.
+
+    :returns: Map of ``str(topic.id)`` to the wiki summary dict.
+    """
+    wiki_map: dict[str, dict] = {}
+    for topic in topics:
+        if topic.topic_type_id >= 6000:
+            continue
+        try:
+            wiki_map[str(topic.id)] = fetch_wikipedia_summary(topic.name)
+        except httpx.HTTPError as e:
+            log.warning(
+                json.dumps({"event": "wiki_fetch_failed", "topic": topic.name, "error": str(e)})
+            )
+    return wiki_map
+
+
+def _build_article_requests(
+    topics: list[Topic],
+    wiki_map: dict[str, dict],
+) -> list[anthropic.types.MessageCreateParamsNonStreaming]:
+    requests = []
+    for topic in topics:
+        wiki = wiki_map.get(str(topic.id))
+        if wiki is None:  # math topic or failed wiki fetch
+            continue
+        requests.append(
+            {
+                "custom_id": f"article-{topic.id}",
+                "params": {
+                    "model": _ARTICLE_MODEL,
+                    "max_tokens": 1024,
+                    "system": _ARTICLE_SYSTEM_PROMPT,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": _ARTICLE_USER_PROMPT_TEMPLATE.format(
+                                topic_name=topic.name,
+                                topic_description=topic.description or "",
+                                extract=wiki["extract"],
+                            ),
+                        }
+                    ],
+                },
+            }
+        )
+    return requests
+
+
 def run():
     db = SessionLocal()
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
@@ -155,8 +231,10 @@ def run():
     schedule.generated_at = now
     db.commit()
 
-    # Submit batch
-    requests = _build_batch_requests(topics)
+    # Submit batch — questions for every topic plus articles for non-math topics.
+    # Wikipedia summaries are fetched up front so each article prompt can be grounded in them.
+    wiki_map = _fetch_article_sources(topics)
+    requests = _build_batch_requests(topics) + _build_article_requests(topics, wiki_map)
     batch = client.messages.batches.create(requests=requests)
     schedule.batch_job_id = batch.id
     db.commit()
@@ -184,8 +262,11 @@ def run():
     else:
         raise TimeoutError(f"Batch {batch.id} did not complete within 12 minutes.")
 
-    # Process results
+    # Process results. Questions and articles share the batch; they're told apart by
+    # custom_id ("topic|qt|difficulty" for questions, "article-{topic_id}" for articles)
+    # and their token usage is accounted for separately (different model / pricing).
     total_input = total_output = total_cache_read = total_cache_creation = 0
+    art_input = art_output = art_cache_read = art_cache_creation = 0
     for result in client.messages.batches.results(batch.id):
         if result.result.type != "succeeded":
             log.warning(
@@ -199,13 +280,8 @@ def run():
             )
             continue
 
-        topic_id_str, qt_id_str, difficulty_str = result.custom_id.split("|")
         msg = result.result.message
         usage = msg.usage
-        total_input += usage.input_tokens
-        total_output += usage.output_tokens
-        total_cache_read += getattr(usage, "cache_read_input_tokens", 0) or 0
-        total_cache_creation += getattr(usage, "cache_creation_input_tokens", 0) or 0
 
         try:
             blob = json.loads(msg.content[0].text)
@@ -214,6 +290,35 @@ def run():
                 json.dumps({"event": "bad_json", "custom_id": result.custom_id, "error": str(e)})
             )
             continue
+
+        if result.custom_id.startswith("article-"):
+            art_input += usage.input_tokens
+            art_output += usage.output_tokens
+            art_cache_read += getattr(usage, "cache_read_input_tokens", 0) or 0
+            art_cache_creation += getattr(usage, "cache_creation_input_tokens", 0) or 0
+
+            topic_id_str = result.custom_id.removeprefix("article-")
+            wiki = wiki_map.get(topic_id_str, {})
+            s3.put_object(
+                Bucket=_S3_BUCKET,
+                Key=f"articles/{topic_id_str}.json",
+                Body=json.dumps(
+                    {
+                        "title": blob["title"],
+                        "body": blob["body"],
+                        "image_url": wiki.get("thumbnail_url"),
+                        "source_url": wiki.get("page_url", ""),
+                    }
+                ),
+                ContentType="application/json",
+            )
+            continue
+
+        topic_id_str, qt_id_str, difficulty_str = result.custom_id.split("|")
+        total_input += usage.input_tokens
+        total_output += usage.output_tokens
+        total_cache_read += getattr(usage, "cache_read_input_tokens", 0) or 0
+        total_cache_creation += getattr(usage, "cache_creation_input_tokens", 0) or 0
 
         question_id = uuid.uuid4()
         s3_key = f"questions/{schedule.id}/{question_id}.json"
@@ -258,6 +363,31 @@ def run():
             ref_id=schedule.id,
         )
     )
+
+    # Article usage is Opus-priced (batch: $7.50/MTok input, $37.50/MTok output).
+    if art_input or art_output:
+        art_input_cost = art_input * 15 * 0.5 / 1_000_000 * 100
+        art_output_cost = art_output * 75 * 0.5 / 1_000_000 * 100
+        art_cache_read_cost = art_cache_read * 1.5 * 0.5 / 1_000_000 * 100
+        art_cache_creation_cost = art_cache_creation * 15 * 1.25 * 0.5 / 1_000_000 * 100
+        art_cost_cents = round(
+            art_input_cost + art_output_cost + art_cache_read_cost + art_cache_creation_cost, 2
+        )
+        db.add(
+            LLMUsage(
+                id=uuid.uuid4(),
+                provider="anthropic",
+                model=_ARTICLE_MODEL,
+                operation="article_generation",
+                input_tokens=art_input,
+                cache_creation_tokens=art_cache_creation,
+                cache_read_tokens=art_cache_read,
+                output_tokens=art_output,
+                cost_cents=art_cost_cents,
+                created_at=now,
+                ref_id=schedule.id,
+            )
+        )
 
     schedule.status = ScheduleStatus.ready
     schedule.ready_at = datetime.now(UTC)
