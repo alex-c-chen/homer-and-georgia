@@ -5,10 +5,11 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel as PydanticBase
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from db import get_db
-from models import DailySchedule, DailyTopic, Question, Topic
+from models import ChatSession, DailySchedule, DailyTopic, Question, Topic
 from s3_util import get_question_blob
 
 router = APIRouter()
@@ -54,6 +55,71 @@ class QuestionDetailOut(PydanticBase):
     answer_key: str
     explanation: str
     options: list[str] | None = None
+
+
+class HistoryDayOut(PydanticBase):
+    """Summary of a past day — used by the History tab."""
+
+    id: uuid.UUID
+    date: date
+    status: str
+    total_questions: int
+    answered: int
+    correct: int
+
+
+@router.get("/history", response_model=list[HistoryDayOut])
+def get_history(limit: int = 30, db: Session = Depends(get_db)):
+    """Return past schedules with answered/correct counts for the History tab."""
+    schedules = (
+        db.query(DailySchedule)
+        .filter(DailySchedule.date < date.today())
+        .order_by(DailySchedule.date.desc())
+        .limit(limit)
+        .all()
+    )
+
+    results = []
+    for sched in schedules:
+        total = (
+            db.query(func.count(Question.id))
+            .filter(Question.daily_schedule_id == sched.id)
+            .scalar()
+            or 0
+        )
+
+        answered = (
+            db.query(func.count(ChatSession.id))
+            .filter(
+                ChatSession.daily_schedule_id == sched.id,
+                ChatSession.is_correct.isnot(None),
+            )
+            .scalar()
+            or 0
+        )
+
+        correct = (
+            db.query(func.count(ChatSession.id))
+            .filter(
+                ChatSession.daily_schedule_id == sched.id,
+                ChatSession.is_correct.is_(True),
+            )
+            .scalar()
+            or 0
+        )
+
+        results.append(
+            HistoryDayOut(
+                id=sched.id,
+                date=sched.date,
+                status=sched.status,
+                total_questions=total,
+                answered=answered,
+                correct=correct,
+            )
+        )
+
+    return results
 
 
 @router.get("/today", response_model=DayOut)

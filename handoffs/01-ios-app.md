@@ -48,9 +48,14 @@ ios/HomerAndGeorgia/
     ├── Chat/
     │   ├── ChatView.swift
     │   └── MessageBubbleView.swift
+    ├── History/
+    │   └── HistoryView.swift        ← ALREADY WRITTEN — do not recreate
     └── Usage/
         └── UsageView.swift
 ```
+
+`Views/History/HistoryView.swift` and `ViewModels/HistoryViewModel.swift` are already
+implemented. Do not overwrite them — add `fetchHistory` to `APIClient` to wire it up.
 
 ---
 
@@ -96,6 +101,10 @@ GET  /chat/sessions/{sessionId}/messages
 
 GET  /usage/summary
      → UsageSummary { llm: { totalCents, byOperation }, aws: { totalCents, byService }, totalCents }
+
+GET  /schedule/history?limit=30
+     → [HistoryDay] { id, date, status, totalQuestions, answered, correct }
+     ordered newest-first; used by the History tab
 ```
 
 All `Codable` structs matching these shapes are already defined in `Models/Models.swift`.
@@ -124,6 +133,7 @@ final class APIClient {
     func startSession(questionId: UUID, answer: String, timeSpent: Int?) async throws -> ChatSessionResponse
     func sendMessage(sessionId: UUID, content: String) -> AsyncThrowingStream<String, Error>  // yields text deltas
     func fetchMessages(sessionId: UUID) async throws -> [ChatMessageResponse]
+    func fetchHistory(limit: Int) async throws -> [HistoryDay]
     func fetchUsage() async throws -> UsageSummary
 }
 ```
@@ -225,7 +235,7 @@ final class UsageViewModel {
 
 ### ContentView — root TabView
 
-Two tabs: "Today" (calendar icon) and "Usage" (chart icon).
+Three tabs: "Today" (calendar icon), "History" (clock icon), "Usage" (chart icon).
 
 ### TodayView (Screen 1)
 

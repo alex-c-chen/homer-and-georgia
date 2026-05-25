@@ -8,6 +8,22 @@ struct DaySchedule: Codable, Identifiable {
     let status: String
 }
 
+struct HistoryDay: Codable, Identifiable {
+    let id: UUID
+    let date: Date
+    let status: String
+    let totalQuestions: Int
+    let answered: Int
+    let correct: Int
+
+    var scorePercent: Double {
+        guard answered > 0 else { return 0 }
+        return Double(correct) / Double(answered)
+    }
+
+    var isComplete: Bool { answered == totalQuestions && totalQuestions > 0 }
+}
+
 struct Topic: Codable, Identifiable {
     let id: UUID
     let name: String
