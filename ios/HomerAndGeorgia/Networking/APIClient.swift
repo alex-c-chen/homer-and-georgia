@@ -116,6 +116,17 @@ final class APIClient: @unchecked Sendable {
         try await fetch("/schedule/history?limit=\(limit)")
     }
 
+    // MARK: - Article
+
+    /// Returns nil when the topic has no article (math topic or not yet generated, i.e. 404).
+    func fetchArticle(topicId: UUID) async throws -> Article? {
+        do {
+            return try await fetch("/topics/\(topicId)/article")
+        } catch APIError.notFound {
+            return nil
+        }
+    }
+
     // MARK: - Chat
 
     private struct StartSessionBody: Encodable {

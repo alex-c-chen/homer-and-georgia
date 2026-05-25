@@ -102,6 +102,15 @@ struct RevealResponse: Codable {
     let explanation: String
 }
 
+// MARK: - Article
+
+struct Article: Codable {
+    let title: String
+    let body: String        // markdown prose
+    let imageUrl: String?
+    let sourceUrl: String
+}
+
 // MARK: - Chat
 
 struct ChatSessionResponse: Codable, Identifiable {
