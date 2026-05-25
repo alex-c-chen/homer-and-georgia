@@ -57,6 +57,13 @@ class QuestionDetailOut(PydanticBase):
     options: list[str] | None = None
 
 
+class RevealOut(PydanticBase):
+    """Answer key + explanation, shown after the user has submitted."""
+
+    answer_key: str
+    explanation: str
+
+
 class HistoryDayOut(PydanticBase):
     """Summary of a past day — used by the History tab."""
 
@@ -172,3 +179,24 @@ def get_question_detail(question_id: uuid.UUID, db: Session = Depends(get_db)):
         prior_question_id=question.prior_question_id,
         **blob,
     )
+
+
+@router.get("/questions/{question_id}/reveal", response_model=RevealOut)
+def reveal_answer(question_id: uuid.UUID, db: Session = Depends(get_db)):
+    """Return the answer key and explanation for a question.
+
+    Gated on the user having already submitted: only callable once a
+    ``chat_session`` exists for this question.
+
+    :raises HTTPException 404: if the question or its chat session does not exist.
+    """
+    question = db.get(Question, question_id)
+    if not question:
+        raise HTTPException(404, "Question not found.")
+
+    session_exists = db.query(ChatSession.id).filter(ChatSession.question_id == question_id).first()
+    if not session_exists:
+        raise HTTPException(404, "No session for this question yet — submit an answer first.")
+
+    blob = get_question_blob(question.s3_key)
+    return RevealOut(answer_key=blob["answer_key"], explanation=blob["explanation"])
