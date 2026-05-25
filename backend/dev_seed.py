@@ -29,6 +29,9 @@ from wiki_util import fetch_wikipedia_summary
 DATABASE_URL = os.environ["DATABASE_URL"]
 S3_BUCKET = os.environ.get("S3_BUCKET", "homer-and-georgia-prod-questions")
 
+# Reader-facing question-type labels, mirroring cron.py's article prompt.
+ARTICLE_QUESTION_TYPE_LABELS = {1: "Quick recall", 2: "Short answer", 3: "Show your work"}
+
 engine = create_engine(DATABASE_URL)
 s3 = boto3.client("s3")
 
@@ -44,7 +47,12 @@ TOPICS = [
                 "prompt": "How many Nobel Prizes did Marie Curie win, and in which fields?",
                 "answer_key": "Two — Physics (1903) and Chemistry (1911).",
                 "explanation": "Curie won the Nobel Prize in Physics in 1903 (shared with Pierre Curie and Henri Becquerel) for their research on radiation, and the Nobel Prize in Chemistry in 1911 for the discovery of radium and polonium. She remains the only person to have won Nobel Prizes in two different sciences.",
-                "options": ["One — Physics", "Two — Physics and Chemistry", "Two — Chemistry and Medicine", "Three — Physics, Chemistry, and Peace"],
+                "options": [
+                    "One — Physics",
+                    "Two — Physics and Chemistry",
+                    "Two — Chemistry and Medicine",
+                    "Three — Physics, Chemistry, and Peace",
+                ],
             },
             {
                 "question_type_id": 2,  # short_answer
@@ -75,7 +83,12 @@ TOPICS = [
                 "prompt": "What does E=mc² mean in plain English?",
                 "answer_key": "Mass and energy are equivalent and interconvertible; a small amount of mass corresponds to a large amount of energy (because c² is enormous).",
                 "explanation": "E=mc² states that the energy (E) of an object at rest equals its mass (m) multiplied by the speed of light squared (c² ≈ 9×10¹⁶ m²/s²). Because c² is so large, even a tiny mass contains a huge amount of energy — the principle behind nuclear reactions.",
-                "options": ["Energy equals mass times the speed of light", "Mass and energy are equivalent", "Energy is always conserved", "The speed of light equals mass times energy"],
+                "options": [
+                    "Energy equals mass times the speed of light",
+                    "Mass and energy are equivalent",
+                    "Energy is always conserved",
+                    "The speed of light equals mass times energy",
+                ],
             },
             {
                 "question_type_id": 2,  # short_answer
@@ -205,23 +218,38 @@ def run():
                     created_at=now,
                 )
                 db.add(question)
-                print(f"  ✓ {topic_data['name']} — Q{q_data['question_type_id']} (difficulty {q_data['difficulty']})")
+                print(
+                    f"  ✓ {topic_data['name']} — Q{q_data['question_type_id']} (difficulty {q_data['difficulty']})"
+                )
 
             # Dev shortcut: non-math topics get an article straight from the Wikipedia
             # extract — no LLM call, so local testing doesn't depend on the nightly cron.
+            # The cron grounds real articles in the topic's questions; mirror that here by
+            # appending the question prompts to the extract body so local content matches.
             if topic_data["topic_type_id"] < 6000:
                 try:
                     wiki = fetch_wikipedia_summary(topic_data["name"])
                 except httpx.HTTPError as e:
-                    print(f"  ⚠ {topic_data['name']} — Wikipedia fetch failed, skipping article: {e}")
+                    print(
+                        f"  ⚠ {topic_data['name']} — Wikipedia fetch failed, skipping article: {e}"
+                    )
                 else:
+                    questions_block = "\n".join(
+                        f"{i}. [{ARTICLE_QUESTION_TYPE_LABELS[q['question_type_id']]}] {q['prompt']}"
+                        for i, q in enumerate(topic_data["questions"], start=1)
+                    )
+                    body = (
+                        f"{wiki['extract']}\n\n"
+                        f"The reader will be asked these questions after reading the article:\n"
+                        f"{questions_block}"
+                    )
                     s3.put_object(
                         Bucket=S3_BUCKET,
                         Key=f"articles/{topic.id}.json",
                         Body=json.dumps(
                             {
                                 "title": topic_data["name"],
-                                "body": wiki["extract"],
+                                "body": body,
                                 "image_url": wiki["thumbnail_url"],
                                 "source_url": wiki["page_url"],
                             }

@@ -78,6 +78,10 @@ _ARTICLE_SYSTEM_PROMPT = (
     "Make it intellectually engaging, not encyclopedic."
 )
 
+# Reader-facing labels for the question types, used when listing questions in the
+# article prompt (distinct from the terse internal labels in _build_batch_requests).
+_ARTICLE_QUESTION_TYPE_LABELS = {1: "Quick recall", 2: "Short answer", 3: "Show your work"}
+
 _ARTICLE_USER_PROMPT_TEMPLATE = """\
 Topic: {topic_name}
 
@@ -86,7 +90,13 @@ Topic description: {topic_description}
 Wikipedia extract:
 {extract}
 
-Write the educational article.\
+The reader will be asked these questions after reading the article:
+{questions}
+
+Write the educational article so that a reader who understands it well could \
+confidently answer all the questions above. Cover the specific concepts, facts, and \
+reasoning each question tests. Do not reveal the answers directly — teach the \
+underlying knowledge.\
 """
 
 
@@ -163,12 +173,28 @@ def _fetch_article_sources(topics: list[Topic]) -> dict[str, dict]:
 def _build_article_requests(
     topics: list[Topic],
     wiki_map: dict[str, dict],
+    questions_by_topic: dict[str, list[dict]],
 ) -> list[anthropic.types.MessageCreateParamsNonStreaming]:
+    """Build the article batch, grounding each prompt in the topic's generated questions.
+
+    :param questions_by_topic: Map of ``str(topic.id)`` to that topic's question dicts
+        (``question_type_id`` + ``prompt``), as produced by the question batch.
+    """
     requests = []
     for topic in topics:
         wiki = wiki_map.get(str(topic.id))
         if wiki is None:  # math topic or failed wiki fetch
             continue
+        # Order by question type so the list reads quick-recall → short-answer → show-work.
+        questions = sorted(
+            questions_by_topic.get(str(topic.id), []),
+            key=lambda q: q["question_type_id"],
+        )
+        questions_block = "\n".join(
+            f"{i}. [{_ARTICLE_QUESTION_TYPE_LABELS.get(q['question_type_id'], 'Question')}] "
+            f"{q['prompt']}"
+            for i, q in enumerate(questions, start=1)
+        )
         requests.append(
             {
                 "custom_id": f"article-{topic.id}",
@@ -183,6 +209,7 @@ def _build_article_requests(
                                 topic_name=topic.name,
                                 topic_description=topic.description or "",
                                 extract=wiki["extract"],
+                                questions=questions_block,
                             ),
                         }
                     ],
@@ -190,6 +217,41 @@ def _build_article_requests(
             }
         )
     return requests
+
+
+def _submit_and_wait(client, requests, *, phase):
+    """Submit a batch and poll until it ends (max ~12 min).
+
+    :param phase: Label for log events (``"questions"`` / ``"articles"``).
+    :raises TimeoutError: if the batch does not end within the poll window.
+    """
+    batch = client.messages.batches.create(requests=requests)
+    log.info(
+        json.dumps(
+            {
+                "event": "batch_submitted",
+                "phase": phase,
+                "batch_id": batch.id,
+                "request_count": len(requests),
+            }
+        )
+    )
+    for attempt in range(72):
+        time.sleep(10)
+        batch = client.messages.batches.retrieve(batch.id)
+        log.info(
+            json.dumps(
+                {
+                    "event": "batch_poll",
+                    "phase": phase,
+                    "elapsed_seconds": attempt * 10,
+                    "status": batch.processing_status,
+                }
+            )
+        )
+        if batch.processing_status == "ended":
+            return batch
+    raise TimeoutError(f"Batch {batch.id} ({phase}) did not complete within 12 minutes.")
 
 
 def run():
@@ -231,43 +293,21 @@ def run():
     schedule.generated_at = now
     db.commit()
 
-    # Submit batch — questions for every topic plus articles for non-math topics.
+    # Two-phase batch: questions first, then articles. Each article is grounded in the
+    # actual questions its reader will face, so the LLM teaches exactly what they test —
+    # but those question prompts only exist once the question batch has ended.
     # Wikipedia summaries are fetched up front so each article prompt can be grounded in them.
     wiki_map = _fetch_article_sources(topics)
-    requests = _build_batch_requests(topics) + _build_article_requests(topics, wiki_map)
-    batch = client.messages.batches.create(requests=requests)
-    schedule.batch_job_id = batch.id
+
+    # Phase 1 — questions.
+    q_requests = _build_batch_requests(topics)
+    q_batch = _submit_and_wait(client, q_requests, phase="questions")
+    schedule.batch_job_id = q_batch.id
     db.commit()
-    log.info(
-        json.dumps(
-            {"event": "batch_submitted", "batch_id": batch.id, "request_count": len(requests)}
-        )
-    )
 
-    # Poll until complete (max ~12 min)
-    for attempt in range(72):
-        time.sleep(10)
-        batch = client.messages.batches.retrieve(batch.id)
-        log.info(
-            json.dumps(
-                {
-                    "event": "batch_poll",
-                    "elapsed_seconds": attempt * 10,
-                    "status": batch.processing_status,
-                }
-            )
-        )
-        if batch.processing_status == "ended":
-            break
-    else:
-        raise TimeoutError(f"Batch {batch.id} did not complete within 12 minutes.")
-
-    # Process results. Questions and articles share the batch; they're told apart by
-    # custom_id ("topic|qt|difficulty" for questions, "article-{topic_id}" for articles)
-    # and their token usage is accounted for separately (different model / pricing).
     total_input = total_output = total_cache_read = total_cache_creation = 0
-    art_input = art_output = art_cache_read = art_cache_creation = 0
-    for result in client.messages.batches.results(batch.id):
+    questions_by_topic: dict[str, list[dict]] = {}
+    for result in client.messages.batches.results(q_batch.id):
         if result.result.type != "succeeded":
             log.warning(
                 json.dumps(
@@ -288,29 +328,6 @@ def run():
         except (json.JSONDecodeError, IndexError) as e:
             log.warning(
                 json.dumps({"event": "bad_json", "custom_id": result.custom_id, "error": str(e)})
-            )
-            continue
-
-        if result.custom_id.startswith("article-"):
-            art_input += usage.input_tokens
-            art_output += usage.output_tokens
-            art_cache_read += getattr(usage, "cache_read_input_tokens", 0) or 0
-            art_cache_creation += getattr(usage, "cache_creation_input_tokens", 0) or 0
-
-            topic_id_str = result.custom_id.removeprefix("article-")
-            wiki = wiki_map.get(topic_id_str, {})
-            s3.put_object(
-                Bucket=_S3_BUCKET,
-                Key=f"articles/{topic_id_str}.json",
-                Body=json.dumps(
-                    {
-                        "title": blob["title"],
-                        "body": blob["body"],
-                        "image_url": wiki.get("thumbnail_url"),
-                        "source_url": wiki.get("page_url", ""),
-                    }
-                ),
-                ContentType="application/json",
             )
             continue
 
@@ -340,6 +357,65 @@ def run():
                 created_at=now,
             )
         )
+
+        if blob.get("prompt"):
+            questions_by_topic.setdefault(topic_id_str, []).append(
+                {"question_type_id": int(qt_id_str), "prompt": blob["prompt"]}
+            )
+
+    # Phase 2 — articles, grounded in the questions generated above.
+    art_input = art_output = art_cache_read = art_cache_creation = 0
+    article_requests = _build_article_requests(topics, wiki_map, questions_by_topic)
+    if article_requests:
+        a_batch = _submit_and_wait(client, article_requests, phase="articles")
+        schedule.batch_job_id = a_batch.id
+        db.commit()
+        for result in client.messages.batches.results(a_batch.id):
+            if result.result.type != "succeeded":
+                log.warning(
+                    json.dumps(
+                        {
+                            "event": "request_failed",
+                            "custom_id": result.custom_id,
+                            "type": result.result.type,
+                        }
+                    )
+                )
+                continue
+
+            msg = result.result.message
+            usage = msg.usage
+
+            try:
+                blob = json.loads(msg.content[0].text)
+            except (json.JSONDecodeError, IndexError) as e:
+                log.warning(
+                    json.dumps(
+                        {"event": "bad_json", "custom_id": result.custom_id, "error": str(e)}
+                    )
+                )
+                continue
+
+            art_input += usage.input_tokens
+            art_output += usage.output_tokens
+            art_cache_read += getattr(usage, "cache_read_input_tokens", 0) or 0
+            art_cache_creation += getattr(usage, "cache_creation_input_tokens", 0) or 0
+
+            topic_id_str = result.custom_id.removeprefix("article-")
+            wiki = wiki_map.get(topic_id_str, {})
+            s3.put_object(
+                Bucket=_S3_BUCKET,
+                Key=f"articles/{topic_id_str}.json",
+                Body=json.dumps(
+                    {
+                        "title": blob["title"],
+                        "body": blob["body"],
+                        "image_url": wiki.get("thumbnail_url"),
+                        "source_url": wiki.get("page_url", ""),
+                    }
+                ),
+                ContentType="application/json",
+            )
 
     # Record usage (batch pricing: 50% off standard)
     input_cost = total_input * 3 * 0.5 / 1_000_000 * 100
@@ -397,7 +473,7 @@ def run():
             {
                 "event": "batch_complete",
                 "date": str(tomorrow),
-                "request_count": len(requests),
+                "request_count": len(q_requests) + len(article_requests),
                 "total_input_tokens": total_input,
                 "total_output_tokens": total_output,
                 "cost_cents": float(cost_cents),
