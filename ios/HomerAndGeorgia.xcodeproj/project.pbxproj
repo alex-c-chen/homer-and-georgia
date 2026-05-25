@@ -1,0 +1,456 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		031D0CB0F30715E625E295F6 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E5E87EB9F48FCDF2C81808 /* APIClient.swift */; };
+		26094CC8B2941E8969F9AB4E /* TopicRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C4E027AD228D422057A85 /* TopicRowView.swift */; };
+		3C19C98735518C34C80D90A3 /* TopicDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0520171A0481101444218F4A /* TopicDetailView.swift */; };
+		493F71BA0F6CC35808D8E85A /* UsageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62BF400BAF41AC42C01898BB /* UsageViewModel.swift */; };
+		4F17E03AA65A652C2D7AD3AA /* TopicAnswerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6810A880796709F90842ED44 /* TopicAnswerViewModel.swift */; };
+		5C958728F0C8F3A520A40E75 /* HomerAndGeorgiaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CF80074F03FF480A2467FF1 /* HomerAndGeorgiaApp.swift */; };
+		755F69AD3C8883D563166B41 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2E96BE89399C0E3BCFBA91 /* HistoryView.swift */; };
+		81420EF21BD7910E3E22FF50 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C973136F13FBEA2B1AF273 /* HistoryViewModel.swift */; };
+		81F11B78F232D0637CDD22BA /* UsageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2423D43E7F8AA03C970413 /* UsageView.swift */; };
+		9209730D2EBB16665A8B86AB /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51CB3F30F88B77EBC71CD492 /* Theme.swift */; };
+		A7B26194315552C3E38E31A2 /* TodayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51B94A8C8B6FE474909E4A15 /* TodayViewModel.swift */; };
+		B763D652F8BEBA83721B2ED1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3EF91461F8FA1624197921 /* Models.swift */; };
+		D0EE10F0CDD1DE69C843BC0D /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3123C3D8313810CAF6ED4949 /* Config.swift */; };
+		E0D356317B5CA300A03D25DA /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A81FA4642775CA0DABFB60 /* ChatViewModel.swift */; };
+		EBD0EADE82F67BFB250E945B /* MessageBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E25D950B70D8C2C25684703 /* MessageBubbleView.swift */; };
+		EC0D68FF9C4EE3A31D6B2294 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 078989DB5F8AE774DFE2921D /* ContentView.swift */; };
+		EE39401672CF633418C83651 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8CC6255C524BDFF9E3BE13C /* TodayView.swift */; };
+		EF248EFEE1C8B540D4CC35AE /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39994170D0DC65869EC693D /* ChatView.swift */; };
+		FF9AB5653AE96C02370DE418 /* QuestionAnswerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 850ABFA484BA25661F43FB77 /* QuestionAnswerCard.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0520171A0481101444218F4A /* TopicDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicDetailView.swift; sourceTree = "<group>"; };
+		078989DB5F8AE774DFE2921D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		18E5E87EB9F48FCDF2C81808 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		1E25D950B70D8C2C25684703 /* MessageBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubbleView.swift; sourceTree = "<group>"; };
+		1E3EF91461F8FA1624197921 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		3123C3D8313810CAF6ED4949 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		43A81FA4642775CA0DABFB60 /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
+		4CF80074F03FF480A2467FF1 /* HomerAndGeorgiaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomerAndGeorgiaApp.swift; sourceTree = "<group>"; };
+		51B94A8C8B6FE474909E4A15 /* TodayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewModel.swift; sourceTree = "<group>"; };
+		51CB3F30F88B77EBC71CD492 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		62BF400BAF41AC42C01898BB /* UsageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageViewModel.swift; sourceTree = "<group>"; };
+		6810A880796709F90842ED44 /* TopicAnswerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicAnswerViewModel.swift; sourceTree = "<group>"; };
+		75C973136F13FBEA2B1AF273 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
+		850ABFA484BA25661F43FB77 /* QuestionAnswerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionAnswerCard.swift; sourceTree = "<group>"; };
+		8A2423D43E7F8AA03C970413 /* UsageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageView.swift; sourceTree = "<group>"; };
+		A8CC6255C524BDFF9E3BE13C /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		D754C5FEC05C31E11CCE22A0 /* HomerAndGeorgia.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HomerAndGeorgia.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB2E96BE89399C0E3BCFBA91 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		F39994170D0DC65869EC693D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		FE5C4E027AD228D422057A85 /* TopicRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicRowView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		006627A2C366902EB6D9818A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D754C5FEC05C31E11CCE22A0 /* HomerAndGeorgia.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0F574A304ED2346988D6EAB6 = {
+			isa = PBXGroup;
+			children = (
+				16AFAD773E9EC2F206D814FD /* HomerAndGeorgia */,
+				006627A2C366902EB6D9818A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		16AFAD773E9EC2F206D814FD /* HomerAndGeorgia */ = {
+			isa = PBXGroup;
+			children = (
+				1A96E415DD5F043F99C6C802 /* App */,
+				20E1D86686182428760ABF43 /* Config */,
+				3B19BABAFECE5C80D2FA4D10 /* Models */,
+				3F11498559C73973EFA88D71 /* Networking */,
+				E5044A5870ED935FE08B7B77 /* ViewModels */,
+				D9803F013ED2292FAD317328 /* Views */,
+			);
+			path = HomerAndGeorgia;
+			sourceTree = "<group>";
+		};
+		1A96E415DD5F043F99C6C802 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				078989DB5F8AE774DFE2921D /* ContentView.swift */,
+				4CF80074F03FF480A2467FF1 /* HomerAndGeorgiaApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		20E1D86686182428760ABF43 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				3123C3D8313810CAF6ED4949 /* Config.swift */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		2476D8EC36C678ADBB84B0B5 /* Today */ = {
+			isa = PBXGroup;
+			children = (
+				A8CC6255C524BDFF9E3BE13C /* TodayView.swift */,
+				FE5C4E027AD228D422057A85 /* TopicRowView.swift */,
+			);
+			path = Today;
+			sourceTree = "<group>";
+		};
+		2C9933A64D2F3349D12D9DA1 /* Question */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Question;
+			sourceTree = "<group>";
+		};
+		3A12D0D346BC176492AA4FEC /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				F39994170D0DC65869EC693D /* ChatView.swift */,
+				1E25D950B70D8C2C25684703 /* MessageBubbleView.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+		3B19BABAFECE5C80D2FA4D10 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				1E3EF91461F8FA1624197921 /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		3F11498559C73973EFA88D71 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				18E5E87EB9F48FCDF2C81808 /* APIClient.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		94A8093489F3F44F5E3024D5 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				DB2E96BE89399C0E3BCFBA91 /* HistoryView.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		A5D8A02C2E938B11667A236D /* Usage */ = {
+			isa = PBXGroup;
+			children = (
+				8A2423D43E7F8AA03C970413 /* UsageView.swift */,
+			);
+			path = Usage;
+			sourceTree = "<group>";
+		};
+		D9803F013ED2292FAD317328 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				51CB3F30F88B77EBC71CD492 /* Theme.swift */,
+				3A12D0D346BC176492AA4FEC /* Chat */,
+				94A8093489F3F44F5E3024D5 /* History */,
+				2C9933A64D2F3349D12D9DA1 /* Question */,
+				2476D8EC36C678ADBB84B0B5 /* Today */,
+				E210D788408812BC8BA413D8 /* Topic */,
+				A5D8A02C2E938B11667A236D /* Usage */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E210D788408812BC8BA413D8 /* Topic */ = {
+			isa = PBXGroup;
+			children = (
+				850ABFA484BA25661F43FB77 /* QuestionAnswerCard.swift */,
+				0520171A0481101444218F4A /* TopicDetailView.swift */,
+			);
+			path = Topic;
+			sourceTree = "<group>";
+		};
+		E5044A5870ED935FE08B7B77 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				43A81FA4642775CA0DABFB60 /* ChatViewModel.swift */,
+				75C973136F13FBEA2B1AF273 /* HistoryViewModel.swift */,
+				51B94A8C8B6FE474909E4A15 /* TodayViewModel.swift */,
+				6810A880796709F90842ED44 /* TopicAnswerViewModel.swift */,
+				62BF400BAF41AC42C01898BB /* UsageViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		20D3B38F61B68F33F553FF54 /* HomerAndGeorgia */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 167AD2AD1C43D6A50DB08AD0 /* Build configuration list for PBXNativeTarget "HomerAndGeorgia" */;
+			buildPhases = (
+				7A64462E8F20CFE9700A9993 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HomerAndGeorgia;
+			packageProductDependencies = (
+			);
+			productName = HomerAndGeorgia;
+			productReference = D754C5FEC05C31E11CCE22A0 /* HomerAndGeorgia.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CE8BDEB0AE794107E5F948E0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 327388EF86E8BB1A9886482C /* Build configuration list for PBXProject "HomerAndGeorgia" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 0F574A304ED2346988D6EAB6;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 006627A2C366902EB6D9818A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				20D3B38F61B68F33F553FF54 /* HomerAndGeorgia */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7A64462E8F20CFE9700A9993 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				031D0CB0F30715E625E295F6 /* APIClient.swift in Sources */,
+				EF248EFEE1C8B540D4CC35AE /* ChatView.swift in Sources */,
+				E0D356317B5CA300A03D25DA /* ChatViewModel.swift in Sources */,
+				D0EE10F0CDD1DE69C843BC0D /* Config.swift in Sources */,
+				EC0D68FF9C4EE3A31D6B2294 /* ContentView.swift in Sources */,
+				755F69AD3C8883D563166B41 /* HistoryView.swift in Sources */,
+				81420EF21BD7910E3E22FF50 /* HistoryViewModel.swift in Sources */,
+				5C958728F0C8F3A520A40E75 /* HomerAndGeorgiaApp.swift in Sources */,
+				EBD0EADE82F67BFB250E945B /* MessageBubbleView.swift in Sources */,
+				B763D652F8BEBA83721B2ED1 /* Models.swift in Sources */,
+				FF9AB5653AE96C02370DE418 /* QuestionAnswerCard.swift in Sources */,
+				9209730D2EBB16665A8B86AB /* Theme.swift in Sources */,
+				EE39401672CF633418C83651 /* TodayView.swift in Sources */,
+				A7B26194315552C3E38E31A2 /* TodayViewModel.swift in Sources */,
+				4F17E03AA65A652C2D7AD3AA /* TopicAnswerViewModel.swift in Sources */,
+				3C19C98735518C34C80D90A3 /* TopicDetailView.swift in Sources */,
+				26094CC8B2941E8969F9AB4E /* TopicRowView.swift in Sources */,
+				81F11B78F232D0637CDD22BA /* UsageView.swift in Sources */,
+				493F71BA0F6CC35808D8E85A /* UsageViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2F11898B9D1C6C399D166A1D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		4752797C88C5C24BC8635043 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alexchen.homerandgeorgia;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9877F287A08B7469C92B63F3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		B44041D7A3EEE86E406D2D57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alexchen.homerandgeorgia;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		167AD2AD1C43D6A50DB08AD0 /* Build configuration list for PBXNativeTarget "HomerAndGeorgia" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4752797C88C5C24BC8635043 /* Debug */,
+				B44041D7A3EEE86E406D2D57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		327388EF86E8BB1A9886482C /* Build configuration list for PBXProject "HomerAndGeorgia" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9877F287A08B7469C92B63F3 /* Debug */,
+				2F11898B9D1C6C399D166A1D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CE8BDEB0AE794107E5F948E0 /* Project object */;
+}

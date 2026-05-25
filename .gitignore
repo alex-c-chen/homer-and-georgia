@@ -31,3 +31,10 @@ build/
 
 # macOS
 .DS_Store
+
+# Xcode
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
