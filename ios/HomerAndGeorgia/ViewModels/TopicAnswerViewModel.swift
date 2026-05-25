@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 @Observable
 final class TopicAnswerViewModel {
     var questions: [QuestionDetail] = []
@@ -91,7 +92,7 @@ final class TopicAnswerViewModel {
     }
 
     /// Heuristic grade by string match; backend grading is a future TODO.
-    private static func grade(answer: String, answerKey: String) -> Bool? {
+    private nonisolated static func grade(answer: String, answerKey: String) -> Bool? {
         let a = answer.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let b = answerKey.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !a.isEmpty, !b.isEmpty else { return nil }

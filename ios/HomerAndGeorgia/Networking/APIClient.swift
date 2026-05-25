@@ -14,8 +14,9 @@ enum APIError: LocalizedError {
     }
 }
 
-@Observable
-final class APIClient {
+/// Stateless after init: `session`, `decoder`, and `encoder` are immutable and only used
+/// for thread-safe request/decode operations, so concurrent use across tasks is safe.
+final class APIClient: @unchecked Sendable {
     static let shared = APIClient()
 
     private let session = URLSession.shared

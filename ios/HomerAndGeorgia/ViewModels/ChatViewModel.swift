@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 @Observable
 final class ChatViewModel {
     var messages: [ChatMessageResponse] = []   // excludes role == "system"
