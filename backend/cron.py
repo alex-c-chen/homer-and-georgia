@@ -15,6 +15,7 @@ Flow:
 """
 
 import json
+import logging
 import os
 import time
 import uuid
@@ -33,6 +34,9 @@ from models import (
     Topic,
     TopicType,
 )
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+log = logging.getLogger("cron")
 
 _ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 _S3_BUCKET = os.environ["S3_BUCKET"]
@@ -123,7 +127,9 @@ def run():
     # Idempotent: skip if already generated
     existing = db.query(DailySchedule).filter(DailySchedule.date == tomorrow).first()
     if existing and existing.status not in (ScheduleStatus.pending,):
-        print(f"Schedule for {tomorrow} already in status={existing.status}, skipping.")
+        log.info(
+            json.dumps({"event": "skip", "date": str(tomorrow), "status": str(existing.status)})
+        )
         return
 
     schedule = existing or DailySchedule(
@@ -154,13 +160,25 @@ def run():
     batch = client.messages.batches.create(requests=requests)
     schedule.batch_job_id = batch.id
     db.commit()
-    print(f"Submitted batch {batch.id} with {len(requests)} requests.")
+    log.info(
+        json.dumps(
+            {"event": "batch_submitted", "batch_id": batch.id, "request_count": len(requests)}
+        )
+    )
 
     # Poll until complete (max ~12 min)
     for attempt in range(72):
         time.sleep(10)
         batch = client.messages.batches.retrieve(batch.id)
-        print(f"  [{attempt * 10}s] status={batch.processing_status}")
+        log.info(
+            json.dumps(
+                {
+                    "event": "batch_poll",
+                    "elapsed_seconds": attempt * 10,
+                    "status": batch.processing_status,
+                }
+            )
+        )
         if batch.processing_status == "ended":
             break
     else:
@@ -170,7 +188,15 @@ def run():
     total_input = total_output = total_cache_read = total_cache_creation = 0
     for result in client.messages.batches.results(batch.id):
         if result.result.type != "succeeded":
-            print(f"  Skipping failed request {result.custom_id}: {result.result.type}")
+            log.warning(
+                json.dumps(
+                    {
+                        "event": "request_failed",
+                        "custom_id": result.custom_id,
+                        "type": result.result.type,
+                    }
+                )
+            )
             continue
 
         topic_id_str, qt_id_str, difficulty_str = result.custom_id.split("|")
@@ -184,7 +210,9 @@ def run():
         try:
             blob = json.loads(msg.content[0].text)
         except (json.JSONDecodeError, IndexError) as e:
-            print(f"  Bad JSON for {result.custom_id}: {e}")
+            log.warning(
+                json.dumps({"event": "bad_json", "custom_id": result.custom_id, "error": str(e)})
+            )
             continue
 
         question_id = uuid.uuid4()
@@ -213,6 +241,7 @@ def run():
     output_cost = total_output * 15 * 0.5 / 1_000_000 * 100
     cache_read_cost = total_cache_read * 0.30 * 0.5 / 1_000_000 * 100
     cache_creation_cost = total_cache_creation * 3 * 1.25 * 0.5 / 1_000_000 * 100
+    cost_cents = round(input_cost + output_cost + cache_read_cost + cache_creation_cost, 2)
 
     db.add(
         LLMUsage(
@@ -224,7 +253,7 @@ def run():
             cache_creation_tokens=total_cache_creation,
             cache_read_tokens=total_cache_read,
             output_tokens=total_output,
-            cost_cents=round(input_cost + output_cost + cache_read_cost + cache_creation_cost, 2),
+            cost_cents=cost_cents,
             created_at=now,
             ref_id=schedule.id,
         )
@@ -233,7 +262,18 @@ def run():
     schedule.status = ScheduleStatus.ready
     schedule.ready_at = datetime.now(UTC)
     db.commit()
-    print(f"Done — {len(requests)} questions ready for {tomorrow}.")
+    log.info(
+        json.dumps(
+            {
+                "event": "batch_complete",
+                "date": str(tomorrow),
+                "request_count": len(requests),
+                "total_input_tokens": total_input,
+                "total_output_tokens": total_output,
+                "cost_cents": float(cost_cents),
+            }
+        )
+    )
 
 
 if __name__ == "__main__":
