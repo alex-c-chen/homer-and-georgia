@@ -109,9 +109,10 @@ def _pick_topics(db, schedule_date: date, n: int) -> list[Topic]:
 
     seed_offset = schedule_date.timetuple().tm_yday
     rotated_general = general[seed_offset % len(general) :] + general[: seed_offset % len(general)]
+    rotated_math = math[seed_offset % len(math) :] + math[: seed_offset % len(math)]
 
     if schedule_date.weekday() < 5:  # Mon–Fri: include math
-        math_pick = math[:2]
+        math_pick = rotated_math[:2]
         general_pick = rotated_general[: n - len(math_pick)]
         return math_pick + general_pick
     else:  # Weekend: all general
@@ -236,7 +237,7 @@ def _submit_and_wait(client, requests, *, phase):
             }
         )
     )
-    for attempt in range(72):
+    for attempt in range(180):  # 30 min max
         time.sleep(10)
         batch = client.messages.batches.retrieve(batch.id)
         log.info(
@@ -251,7 +252,7 @@ def _submit_and_wait(client, requests, *, phase):
         )
         if batch.processing_status == "ended":
             return batch
-    raise TimeoutError(f"Batch {batch.id} ({phase}) did not complete within 12 minutes.")
+    raise TimeoutError(f"Batch {batch.id} ({phase}) did not complete within 30 minutes.")
 
 
 def run():

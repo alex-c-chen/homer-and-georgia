@@ -109,6 +109,7 @@ async def start_session(body: StartSessionIn, db: Session = Depends(get_db)):
         started_at=now,
     )
     db.add(session)
+    db.flush()  # INSERT session before messages so FK is satisfied on commit
 
     db.add(
         ChatMessage(
