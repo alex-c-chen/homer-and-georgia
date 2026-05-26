@@ -38,3 +38,7 @@ xcuserdata/
 *.xccheckout
 *.moved-aside
 DerivedData/
+ios/Secrets.xcconfig
+
+# Claude
+handoffs/

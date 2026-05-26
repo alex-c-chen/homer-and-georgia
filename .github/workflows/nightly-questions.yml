@@ -2,7 +2,7 @@ name: Nightly question generation
 
 on:
   schedule:
-    # 2 AM Eastern = 7 AM UTC (6 AM during EDT)
+    # 2 AM EST = 7 AM UTC (3 AM EDT, close enough)
     - cron: "0 7 * * *"
   workflow_dispatch: # allow manual trigger for testing
 

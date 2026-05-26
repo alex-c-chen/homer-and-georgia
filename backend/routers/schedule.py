@@ -3,7 +3,7 @@
 import uuid
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel as PydanticBase
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -130,12 +130,19 @@ def get_history(limit: int = 30, db: Session = Depends(get_db)):
 
 
 @router.get("/today", response_model=DayOut)
-def get_today(db: Session = Depends(get_db)):
+def get_today(
+    date_param: date | None = Query(default=None, alias="date"),
+    db: Session = Depends(get_db),
+):
     """Return today's schedule row.
+
+    Accepts an optional ``?date=YYYY-MM-DD`` so the client can pass its local
+    date rather than relying on the server's UTC clock.
 
     :raises HTTPException 404: if no schedule has been generated yet.
     """
-    row = db.query(DailySchedule).filter(DailySchedule.date == date.today()).first()
+    target = date_param or date.today()
+    row = db.query(DailySchedule).filter(DailySchedule.date == target).first()
     if not row:
         raise HTTPException(404, "No schedule for today — cron may not have run yet.")
     return row

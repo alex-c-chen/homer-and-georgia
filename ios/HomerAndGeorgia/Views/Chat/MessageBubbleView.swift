@@ -14,16 +14,17 @@ struct MessageBubbleView: View {
             VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
                 if message.role == "user_initial_answer" {
                     Text("Your answer")
-                        .font(.caption2)
+                        .font(Theme.serif(.caption2))
                         .foregroundStyle(.white.opacity(0.7))
                 }
                 Text(message.content)
+                    .font(Theme.serif(.body))
                     .foregroundStyle(isUser ? .white : .primary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(bubbleBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.bubbleCorner, style: .continuous))
             .shadow(color: isUser ? .clear : .black.opacity(0.06), radius: 4, y: 2)
 
             if !isUser { Spacer(minLength: 40) }
@@ -57,7 +58,7 @@ struct TypingIndicator: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Theme.bubbleCorner, style: .continuous))
         .onAppear {
             withAnimation(.easeInOut(duration: 0.5).repeatForever()) {
                 phase = 2

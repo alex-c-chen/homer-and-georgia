@@ -14,25 +14,38 @@ struct ArticleView: View {
                 } else if let article = viewModel.article {
                     articleBody(article)
                 } else if viewModel.unavailable {
-                    ContentUnavailableView(
-                        "No article available",
-                        systemImage: "book.closed",
-                        description: Text("This topic doesn't have a reading yet.")
-                    )
-                    .frame(minHeight: 320)
+                    VStack(spacing: 12) {
+                        Image(systemName: "book.closed")
+                            .font(.largeTitle)
+                            .foregroundStyle(Theme.deepSpaceBlue.opacity(0.3))
+                        Text("No reading available")
+                            .font(Theme.serif(.title3, weight: .semibold))
+                            .foregroundStyle(Theme.deepSpaceBlue)
+                        Text("This topic doesn't have an article yet.")
+                            .font(Theme.serif(.subheadline))
+                            .foregroundStyle(Theme.deepSpaceBlue.opacity(0.5))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 320)
                 } else if let error = viewModel.error {
-                    ContentUnavailableView {
-                        Label("Couldn't load article", systemImage: "exclamationmark.triangle")
-                    } description: {
+                    VStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.largeTitle)
+                            .foregroundStyle(Theme.failure.opacity(0.6))
+                        Text("Couldn't load article")
+                            .font(Theme.serif(.title3, weight: .semibold))
+                            .foregroundStyle(Theme.deepSpaceBlue)
                         Text(error)
-                    } actions: {
+                            .font(Theme.serif(.subheadline))
+                            .foregroundStyle(Theme.deepSpaceBlue.opacity(0.5))
                         Button("Retry") {
                             viewModel.unavailable = false
                             Task { await viewModel.load(topicId: topicId) }
                         }
+                        .font(Theme.serif(.body, weight: .semibold))
                         .buttonStyle(.borderedProminent)
+                        .tint(Theme.generalTint)
                     }
-                    .frame(minHeight: 320)
+                    .frame(maxWidth: .infinity, minHeight: 320)
                 }
             }
             .padding(.top, 12)
@@ -63,23 +76,23 @@ struct ArticleView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 220)
             .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.iconCorner, style: .continuous))
             .padding(.horizontal)
         }
 
         Text(article.title)
-            .font(.title2.bold())
+            .font(Theme.serif(.title2, weight: .bold))
             .padding(.horizontal)
 
         Text(rendered(article.body))
-            .font(.body)
+            .font(Theme.serif(.body))
             .padding(.horizontal)
 
         if let url = URL(string: article.sourceUrl) {
             Link(destination: url) {
                 Text("Source: Wikipedia →")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(Theme.serif(.caption))
+                    .foregroundStyle(tint.opacity(0.8))
             }
             .padding(.horizontal)
             .padding(.bottom, 32)

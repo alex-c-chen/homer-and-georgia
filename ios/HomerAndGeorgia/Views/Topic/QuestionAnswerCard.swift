@@ -16,7 +16,7 @@ struct QuestionAnswerCard: View {
 
             if expanded {
                 Text(question.prompt)
-                    .font(.body)
+                    .font(Theme.serif(.body))
                     .fixedSize(horizontal: false, vertical: true)
 
                 if let result {
@@ -81,7 +81,7 @@ struct QuestionAnswerCard: View {
                 .scrollContentBackground(.hidden)
             }
             .padding(8)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.iconCorner, style: .continuous))
         }
     }
 
@@ -101,7 +101,7 @@ struct QuestionAnswerCard: View {
             .padding(14)
             .background(
                 selected ? tint.opacity(0.12) : Color(.tertiarySystemFill),
-                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                in: RoundedRectangle(cornerRadius: Theme.iconCorner, style: .continuous)
             )
         }
         .buttonStyle(.plain)
@@ -120,19 +120,19 @@ struct QuestionAnswerCard: View {
             .foregroundStyle(result.isCorrect == true ? Theme.success : Theme.failure)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Your answer").font(.caption).foregroundStyle(.secondary)
+                Text("Your answer").font(Theme.serif(.caption)).foregroundStyle(.secondary)
                 Text(viewModel.answerText(for: question))
-                    .font(.subheadline)
+                    .font(Theme.serif(.subheadline))
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("Answer key").font(.caption).foregroundStyle(.secondary)
+                Text("Answer key").font(Theme.serif(.caption)).foregroundStyle(.secondary)
                 Text(result.answerKey)
-                    .font(.subheadline.weight(.medium))
+                    .font(Theme.serif(.subheadline, weight: .medium))
             }
 
             if !result.explanation.isEmpty {
                 Text(result.explanation)
-                    .font(.subheadline)
+                    .font(Theme.serif(.subheadline))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -147,10 +147,10 @@ struct QuestionAnswerCard: View {
                     Text("Discuss with AI")
                     Image(systemName: "arrow.right")
                 }
-                .font(.subheadline.weight(.semibold))
+                .font(Theme.serif(.subheadline, weight: .semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(.thinMaterial, in: Capsule())
+                .glassBackground(in: Capsule())
                 .foregroundStyle(tint)
             }
             .padding(.top, 2)

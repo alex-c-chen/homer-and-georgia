@@ -18,6 +18,10 @@ Topic type IDs follow the convention in CLAUDE.md:
   6100  Calculus / 6200  Linear Algebra / 6300  Statistics / 6400  Probability
 """
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from db import SessionLocal
 from models import QuestionType, TopicType
 

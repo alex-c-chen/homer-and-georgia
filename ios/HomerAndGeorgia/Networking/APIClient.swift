@@ -48,7 +48,9 @@ final class APIClient: @unchecked Sendable {
     // MARK: - Request building
 
     private func request(path: String, method: String = "GET", body: Data? = nil) -> URLRequest {
-        var req = URLRequest(url: Config.apiBaseURL.appending(path: path))
+        // URL(string:relativeTo:) preserves query strings; appending(path:) would percent-encode '?'
+        let url = URL(string: path, relativeTo: Config.apiBaseURL)!.absoluteURL
+        var req = URLRequest(url: url)
         req.httpMethod = method
         if !Config.apiSecret.isEmpty {
             req.setValue("Bearer \(Config.apiSecret)", forHTTPHeaderField: "Authorization")
@@ -93,7 +95,12 @@ final class APIClient: @unchecked Sendable {
     // MARK: - Schedule
 
     func fetchToday() async throws -> DaySchedule {
-        try await fetch("/schedule/today")
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        // Use device local timezone so ET users get ET "today", not UTC
+        let localDate = f.string(from: Date())
+        return try await fetch("/schedule/today?date=\(localDate)")
     }
 
     func fetchTopics(scheduleId: UUID) async throws -> [Topic] {
@@ -183,21 +190,26 @@ final class APIClient: @unchecked Sendable {
 /// Parses the date string shapes the FastAPI backend emits: date-only values,
 /// and datetimes with optional fractional (microsecond) precision and offset.
 enum BackendDate {
-    private static let formats = [
-        "yyyy-MM-dd",
-        "yyyy-MM-dd'T'HH:mm:ssXXXXX",
-        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX",
-        "yyyy-MM-dd'T'HH:mm:ss",            // naive datetime, assumed UTC
-        "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",     // naive datetime with microseconds
-    ]
-
-    private static let formatters: [DateFormatter] = formats.map { format in
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.timeZone = TimeZone(identifier: "UTC")
-        f.dateFormat = format
-        return f
-    }
+    // Date-only values represent calendar dates and should render in the user's
+    // local timezone. Datetime values are absolute moments, parsed in UTC.
+    private static let formatters: [DateFormatter] = {
+        func make(_ format: String, tz: TimeZone) -> DateFormatter {
+            let f = DateFormatter()
+            f.locale = Locale(identifier: "en_US_POSIX")
+            f.timeZone = tz
+            f.dateFormat = format
+            return f
+        }
+        let local = TimeZone.current
+        let utc   = TimeZone(identifier: "UTC")!
+        return [
+            make("yyyy-MM-dd",                    tz: local),
+            make("yyyy-MM-dd'T'HH:mm:ssXXXXX",   tz: utc),
+            make("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX", tz: utc),
+            make("yyyy-MM-dd'T'HH:mm:ss",         tz: utc),
+            make("yyyy-MM-dd'T'HH:mm:ss.SSSSSS",  tz: utc),
+        ]
+    }()
 
     static func parse(_ string: String) -> Date? {
         for formatter in formatters {

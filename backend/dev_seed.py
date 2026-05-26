@@ -10,6 +10,10 @@ Usage:
 import json
 import os
 import uuid
+
+from dotenv import load_dotenv
+
+load_dotenv()
 from datetime import UTC, date, datetime
 
 import boto3
@@ -28,9 +32,6 @@ from wiki_util import fetch_wikipedia_summary
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 S3_BUCKET = os.environ.get("S3_BUCKET", "homer-and-georgia-prod-questions")
-
-# Reader-facing question-type labels, mirroring cron.py's article prompt.
-ARTICLE_QUESTION_TYPE_LABELS = {1: "Quick recall", 2: "Short answer", 3: "Show your work"}
 
 engine = create_engine(DATABASE_URL)
 s3 = boto3.client("s3")
@@ -234,22 +235,13 @@ def run():
                         f"  ⚠ {topic_data['name']} — Wikipedia fetch failed, skipping article: {e}"
                     )
                 else:
-                    questions_block = "\n".join(
-                        f"{i}. [{ARTICLE_QUESTION_TYPE_LABELS[q['question_type_id']]}] {q['prompt']}"
-                        for i, q in enumerate(topic_data["questions"], start=1)
-                    )
-                    body = (
-                        f"{wiki['extract']}\n\n"
-                        f"The reader will be asked these questions after reading the article:\n"
-                        f"{questions_block}"
-                    )
                     s3.put_object(
                         Bucket=S3_BUCKET,
                         Key=f"articles/{topic.id}.json",
                         Body=json.dumps(
                             {
                                 "title": topic_data["name"],
-                                "body": body,
+                                "body": wiki["extract"],
                                 "image_url": wiki["thumbnail_url"],
                                 "source_url": wiki["page_url"],
                             }

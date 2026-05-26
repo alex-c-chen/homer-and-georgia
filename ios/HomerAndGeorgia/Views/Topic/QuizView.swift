@@ -13,8 +13,6 @@ struct QuizView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                header
-
                 if hasPriorContext {
                     priorContextRow
                 }
@@ -37,9 +35,9 @@ struct QuizView: View {
                         .foregroundStyle(Theme.failure)
                 }
 
-                if !viewModel.hasSubmitted {
+                if !viewModel.hasSubmitted && !viewModel.questions.isEmpty {
                     submitButton
-                } else {
+                } else if viewModel.hasSubmitted {
                     completedBanner
                 }
             }
@@ -53,42 +51,17 @@ struct QuizView: View {
         }
     }
 
-    // MARK: - Header
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 12) {
-                Text(topic.emoji).font(.system(size: 40))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(topic.isMath ? "Mathematics" : "General Knowledge")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(tint)
-                    Text("\(viewModel.answeredCount) of \(viewModel.questions.count) answered")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            if let description = topic.description, !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard(tint: tint)
-    }
-
     private var priorContextRow: some View {
         HStack(spacing: 10) {
             Image(systemName: "link")
                 .foregroundStyle(tint)
             Text("Builds on a question from a previous day")
-                .font(.footnote)
+                .font(Theme.serif(.footnote))
                 .foregroundStyle(.secondary)
             Spacer()
         }
         .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassBackground(in: RoundedRectangle(cornerRadius: Theme.inputCorner, style: .continuous))
     }
 
     // MARK: - Submit / completed
@@ -107,11 +80,11 @@ struct QuizView: View {
                     Image(systemName: "paperplane.fill")
                 }
                 Text(viewModel.isSubmitting ? "Grading…" : "Submit All Answers")
-                    .fontWeight(.semibold)
+                    .font(Theme.serif(.body, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(tint.gradient, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .background(tint.gradient, in: RoundedRectangle(cornerRadius: Theme.ctaCorner, style: .continuous))
             .foregroundStyle(.white)
         }
         .disabled(!viewModel.canSubmit)
@@ -126,11 +99,11 @@ struct QuizView: View {
                 .foregroundStyle(Theme.success)
                 .symbolEffect(.bounce, value: viewModel.hasSubmitted)
             Text("Answers submitted — expand a card to review or discuss.")
-                .font(.footnote)
+                .font(Theme.serif(.footnote))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassBackground(in: RoundedRectangle(cornerRadius: Theme.inputCorner, style: .continuous))
     }
 }

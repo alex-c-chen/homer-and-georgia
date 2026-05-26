@@ -12,7 +12,8 @@ struct ContentView: View {
             UsageView()
                 .tabItem { Label("Usage", systemImage: "chart.bar.fill") }
         }
-        .tint(.indigo)
+        .tint(Theme.generalTint)
+        .preferredColorScheme(.dark)
     }
 }
 

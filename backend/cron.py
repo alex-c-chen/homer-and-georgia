@@ -127,7 +127,7 @@ def _build_batch_requests(
             qt_label = {1: "mental", 2: "short_answer", 3: "intermediate"}[qt_id]
             requests.append(
                 {
-                    "custom_id": f"{topic.id}|{qt_id}|{difficulty}",
+                    "custom_id": f"{topic.id}_{qt_id}_{difficulty}",
                     "params": {
                         "model": _ANTHROPIC_MODEL,
                         "max_tokens": 512,
@@ -200,7 +200,7 @@ def _build_article_requests(
                 "custom_id": f"article-{topic.id}",
                 "params": {
                     "model": _ARTICLE_MODEL,
-                    "max_tokens": 1024,
+                    "max_tokens": 2048,
                     "system": _ARTICLE_SYSTEM_PROMPT,
                     "messages": [
                         {
@@ -291,7 +291,15 @@ def run():
 
     schedule.status = ScheduleStatus.generating
     schedule.generated_at = now
+    schedule_id = schedule.id
     db.commit()
+    # commit() expires all ORM objects; re-access topic attributes now (while the
+    # session is still open) so they reload before we detach and close.
+    # Neon's idle-in-transaction timeout (5 min) kills connections held idle longer.
+    for _t in topics:
+        _ = _t.id, _t.name, _t.topic_type_id, _t.description
+    db.expunge_all()
+    db.close()
 
     # Two-phase batch: questions first, then articles. Each article is grounded in the
     # actual questions its reader will face, so the LLM teaches exactly what they test —
@@ -302,8 +310,12 @@ def run():
     # Phase 1 — questions.
     q_requests = _build_batch_requests(topics)
     q_batch = _submit_and_wait(client, q_requests, phase="questions")
+
+    # Open a fresh session to write question results; keep it open through the
+    # whole results loop, then commit+close before the articles batch wait.
+    db = SessionLocal()
+    schedule = db.get(DailySchedule, schedule_id)
     schedule.batch_job_id = q_batch.id
-    db.commit()
 
     total_input = total_output = total_cache_read = total_cache_creation = 0
     questions_by_topic: dict[str, list[dict]] = {}
@@ -331,14 +343,14 @@ def run():
             )
             continue
 
-        topic_id_str, qt_id_str, difficulty_str = result.custom_id.split("|")
+        topic_id_str, qt_id_str, difficulty_str = result.custom_id.split("_")
         total_input += usage.input_tokens
         total_output += usage.output_tokens
         total_cache_read += getattr(usage, "cache_read_input_tokens", 0) or 0
         total_cache_creation += getattr(usage, "cache_creation_input_tokens", 0) or 0
 
         question_id = uuid.uuid4()
-        s3_key = f"questions/{schedule.id}/{question_id}.json"
+        s3_key = f"questions/{schedule_id}/{question_id}.json"
         s3.put_object(
             Bucket=_S3_BUCKET,
             Key=s3_key,
@@ -353,7 +365,7 @@ def run():
                 question_type_id=int(qt_id_str),
                 s3_key=s3_key,
                 difficulty=int(difficulty_str),
-                daily_schedule_id=schedule.id,
+                daily_schedule_id=schedule_id,
                 created_at=now,
             )
         )
@@ -363,13 +375,15 @@ def run():
                 {"question_type_id": int(qt_id_str), "prompt": blob["prompt"]}
             )
 
+    db.commit()
+    db.close()
+
     # Phase 2 — articles, grounded in the questions generated above.
+    # Article results only write to S3, so no DB session needed during the wait.
     art_input = art_output = art_cache_read = art_cache_creation = 0
     article_requests = _build_article_requests(topics, wiki_map, questions_by_topic)
     if article_requests:
         a_batch = _submit_and_wait(client, article_requests, phase="articles")
-        schedule.batch_job_id = a_batch.id
-        db.commit()
         for result in client.messages.batches.results(a_batch.id):
             if result.result.type != "succeeded":
                 log.warning(
@@ -416,6 +430,10 @@ def run():
                 ),
                 ContentType="application/json",
             )
+
+    # Reopen session for final writes (previous sessions were closed before batch waits).
+    db = SessionLocal()
+    schedule = db.get(DailySchedule, schedule_id)
 
     # Record usage (batch pricing: 50% off standard)
     input_cost = total_input * 3 * 0.5 / 1_000_000 * 100

@@ -8,7 +8,7 @@ struct DaySchedule: Codable, Identifiable {
     let status: String
 }
 
-struct HistoryDay: Codable, Identifiable {
+struct HistoryDay: Codable, Identifiable, Hashable {
     let id: UUID
     let date: Date
     let status: String

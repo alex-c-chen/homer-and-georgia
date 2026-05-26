@@ -52,7 +52,7 @@ struct ChatView: View {
 
     private var promptBanner: some View {
         Text(questionPrompt)
-            .font(.subheadline)
+            .font(Theme.serif(.subheadline))
             .italic()
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -63,14 +63,14 @@ struct ChatView: View {
                     .fill(Theme.mathTint)
                     .frame(width: 3)
             }
-            .background(.thinMaterial)
+            .glassBackground()
     }
 
     private func gradeBanner(_ correct: Bool) -> some View {
         HStack {
             Image(systemName: correct ? "checkmark.circle.fill" : "xmark.circle.fill")
             Text(correct ? "Correct" : "Let's review")
-                .fontWeight(.semibold)
+                .font(Theme.serif(.body, weight: .semibold))
             Spacer()
         }
         .foregroundStyle(.white)
@@ -85,9 +85,10 @@ struct ChatView: View {
                     TypingIndicator()
                 } else {
                     Text(viewModel.streamingText)
+                        .font(Theme.serif(.body))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Theme.bubbleCorner, style: .continuous))
                 }
             }
             Spacer(minLength: 40)
@@ -99,6 +100,7 @@ struct ChatView: View {
     private var inputBar: some View {
         HStack(spacing: 10) {
             TextField("Ask a follow-up…", text: $draft, axis: .vertical)
+                .font(Theme.serif(.body))
                 .lineLimit(1...4)
                 .focused($inputFocused)
                 .padding(.horizontal, 14)

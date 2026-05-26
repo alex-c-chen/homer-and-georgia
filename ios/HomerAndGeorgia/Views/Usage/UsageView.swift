@@ -34,12 +34,7 @@ struct UsageView: View {
                 }
                 .padding()
             }
-            .background(
-                LinearGradient(
-                    colors: [Color(.systemGroupedBackground), Color(.systemBackground)],
-                    startPoint: .top, endPoint: .bottom
-                ).ignoresSafeArea()
-            )
+            .background(Theme.burntOrange.ignoresSafeArea())
             .navigationTitle("Usage")
             .task { await viewModel.load() }
             .refreshable { await viewModel.load() }
@@ -55,49 +50,53 @@ struct UsageView: View {
     private func totalCard(_ summary: UsageSummary) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("\(monthLabel) · month-to-date")
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.85))
+                .font(Theme.serif(.subheadline, weight: .medium))
+                .foregroundStyle(Theme.parchment.opacity(0.8))
             Text(dollars(summary.totalCents))
-                .font(.system(size: 44, weight: .bold, design: .rounded))
+                .font(Theme.sans(.largeTitle, weight: .bold))
                 .foregroundStyle(.white)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(24)
-        .background {
-            MeshHero(colors: [.indigo, .purple, .blue, .indigo])
-        }
+        .background(Theme.generalTint)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous))
-        .shadow(color: .indigo.opacity(0.25), radius: 14, y: 6)
+        .shadow(color: Theme.generalTint.opacity(0.4), radius: 14, y: 6)
     }
 
     private func breakdownSection(title: String, icon: String, total: Double, rows: [String: Double]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Label(title, systemImage: icon)
-                    .font(.headline)
+                    .font(Theme.serif(.headline, weight: .semibold))
+                    .foregroundStyle(.white)
                 Spacer()
                 Text(dollars(total))
-                    .font(.headline.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .font(Theme.serif(.headline))
+                    .monospacedDigit()
+                    .foregroundStyle(.white.opacity(0.7))
             }
-            ForEach(rows.sorted { $0.value > $1.value }, id: \.key) { key, value in
+            ForEach(rows.sorted { $0.key < $1.key }, id: \.key) { key, value in
                 HStack {
                     Text(key.replacingOccurrences(of: "_", with: " ").capitalized)
-                        .font(.subheadline)
+                        .font(Theme.serif(.subheadline))
+                        .foregroundStyle(.white.opacity(0.85))
                     Spacer()
                     Text(dollars(value))
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                        .font(Theme.serif(.subheadline))
+                        .monospacedDigit()
+                        .foregroundStyle(.white.opacity(0.55))
                 }
             }
             if rows.isEmpty {
                 Text("No spend recorded yet")
-                    .font(.footnote)
-                    .foregroundStyle(.tertiary)
+                    .font(Theme.serif(.footnote))
+                    .foregroundStyle(.white.opacity(0.4))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard()
+        .padding(20)
+        .background(Color.white.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous))
     }
 
     private func dollars(_ cents: Double) -> String {

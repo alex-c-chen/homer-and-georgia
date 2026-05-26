@@ -17,8 +17,11 @@
 		81420EF21BD7910E3E22FF50 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C973136F13FBEA2B1AF273 /* HistoryViewModel.swift */; };
 		81F11B78F232D0637CDD22BA /* UsageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2423D43E7F8AA03C970413 /* UsageView.swift */; };
 		9209730D2EBB16665A8B86AB /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51CB3F30F88B77EBC71CD492 /* Theme.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* QuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* QuizView.swift */; };
 		A7B26194315552C3E38E31A2 /* TodayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51B94A8C8B6FE474909E4A15 /* TodayViewModel.swift */; };
+		B1B2C3D4E5F60718293A4B5C /* ArticleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B2C3D4E5F60718293A4B5D /* ArticleView.swift */; };
 		B763D652F8BEBA83721B2ED1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3EF91461F8FA1624197921 /* Models.swift */; };
+		C1B2C3D4E5F60718293A4B5C /* ArticleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B2C3D4E5F60718293A4B5D /* ArticleViewModel.swift */; };
 		D0EE10F0CDD1DE69C843BC0D /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3123C3D8313810CAF6ED4949 /* Config.swift */; };
 		E0D356317B5CA300A03D25DA /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A81FA4642775CA0DABFB60 /* ChatViewModel.swift */; };
 		EBD0EADE82F67BFB250E945B /* MessageBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E25D950B70D8C2C25684703 /* MessageBubbleView.swift */; };
@@ -26,9 +29,6 @@
 		EE39401672CF633418C83651 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8CC6255C524BDFF9E3BE13C /* TodayView.swift */; };
 		EF248EFEE1C8B540D4CC35AE /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39994170D0DC65869EC693D /* ChatView.swift */; };
 		FF9AB5653AE96C02370DE418 /* QuestionAnswerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 850ABFA484BA25661F43FB77 /* QuestionAnswerCard.swift */; };
-		A1B2C3D4E5F60718293A4B5C /* QuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* QuizView.swift */; };
-		B1B2C3D4E5F60718293A4B5C /* ArticleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B2C3D4E5F60718293A4B5D /* ArticleView.swift */; };
-		C1B2C3D4E5F60718293A4B5C /* ArticleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B2C3D4E5F60718293A4B5D /* ArticleViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,15 +46,16 @@
 		6810A880796709F90842ED44 /* TopicAnswerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicAnswerViewModel.swift; sourceTree = "<group>"; };
 		75C973136F13FBEA2B1AF273 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		850ABFA484BA25661F43FB77 /* QuestionAnswerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionAnswerCard.swift; sourceTree = "<group>"; };
+		8A2423D43E7F8AA03C970413 /* UsageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B5D /* QuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
+		A8CC6255C524BDFF9E3BE13C /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		B1B2C3D4E5F60718293A4B5D /* ArticleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleView.swift; sourceTree = "<group>"; };
 		C1B2C3D4E5F60718293A4B5D /* ArticleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleViewModel.swift; sourceTree = "<group>"; };
-		8A2423D43E7F8AA03C970413 /* UsageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageView.swift; sourceTree = "<group>"; };
-		A8CC6255C524BDFF9E3BE13C /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
-		D754C5FEC05C31E11CCE22A0 /* HomerAndGeorgia.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HomerAndGeorgia.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D754C5FEC05C31E11CCE22A0 /* HomerAndGeorgia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomerAndGeorgia.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB2E96BE89399C0E3BCFBA91 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		F39994170D0DC65869EC693D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		FE5C4E027AD228D422057A85 /* TopicRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicRowView.swift; sourceTree = "<group>"; };
+		9093AC82C7A1D72494395498 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Secrets.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -71,6 +72,7 @@
 			children = (
 				16AFAD773E9EC2F206D814FD /* HomerAndGeorgia */,
 				006627A2C366902EB6D9818A /* Products */,
+				9093AC82C7A1D72494395498 /* Secrets.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -227,8 +229,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2600;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 327388EF86E8BB1A9886482C /* Build configuration list for PBXProject "HomerAndGeorgia" */;
 			developmentRegion = en;
@@ -341,11 +341,14 @@
 		};
 		4752797C88C5C24BC8635043 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9093AC82C7A1D72494395498 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6B5H72QXN5;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_APISecret = "$(API_SECRET)";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -426,11 +429,14 @@
 		};
 		B44041D7A3EEE86E406D2D57 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9093AC82C7A1D72494395498 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6B5H72QXN5;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_APISecret = "$(API_SECRET)";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
